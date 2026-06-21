@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+/* ─── Design tokens ──────────────────────────────────── */
+
+:root {
+  --background:    #FAFAFA;
+  --foreground:    #2C2C2C;
+  --muted:         #9C9C9C;
+  --accent-beige:  #F5F5DC;
+  --accent-sand:   #E8D5B7;
+  --warm-accent:   #C4A882;
+}
+
+/* ─── Tailwind v4 theme registration ─────────────────── */
+
+@theme inline {
+  --color-background:   var(--background);
+  --color-foreground:   var(--foreground);
+  --color-muted:        var(--muted);
+  --color-accent-beige: var(--accent-beige);
+  --color-accent-sand:  var(--accent-sand);
+  --color-warm-accent:  var(--warm-accent);
+
+  --font-sans:  var(--font-geist-sans);
+  --font-mono:  var(--font-geist-mono);
+  --font-serif: var(--font-playfair);
+}
+
+/* ─── Base styles ─────────────────────────────────────── */
+
+body {
+  background-color: var(--background);
+  color:            var(--foreground);
+  font-family:      var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
