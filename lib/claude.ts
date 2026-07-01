@@ -1,7 +1,10 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { AnalysisResult } from "./types";
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const client = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+  timeout: 90_000,
+});
 
 const SYSTEM_PROMPT = `You are an expert Aesthetic & Wellness Consultant specializing in 'Looksmaxxing'—a holistic approach to maximizing physical appearance through grooming, fitness, skincare, and lifestyle habits. Your goal is to analyze user-uploaded photos (face/body) and their self-reported insecurities to provide empathetic, professional, and science-based improvement plans.
 

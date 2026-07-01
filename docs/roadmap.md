@@ -11,16 +11,17 @@
 
 ---
 
-## Phase 2 — Core Feature `🔨 In Progress`
+## Phase 2 — Core Feature `✅ Complete`
 
 Build the end-to-end photo → analysis flow.
 
 | Task | File(s) | Status |
 |------|---------|--------|
-| API route: receive photo, call analysis engine, return JSON | `app/api/analyze/route.ts` | ⬜ |
+| API route: receive photo, call analysis engine, return JSON | `app/api/analyze/route.ts` | ✅ |
 | Photo capture step: upload or camera input | `app/page.tsx` | ✅ |
-| Loading state: skeleton or animated indicator | component | ⬜ |
-| Results view: Glow Score, top priority, insights, routine | component | ⬜ |
+| Loading state: organic blob shimmer | `components/LoadingShimmer.tsx` | ✅ |
+| Results view: Glow Score, top priority, insights, routine | `components/ResultsView.tsx` | ✅ |
+| State machine wiring (capture → loading → results → reset) | `app/page.tsx` | ✅ |
 
 **Acceptance criteria:** A user can upload a photo, see a loading screen, and receive a formatted analysis with score, insights, and a daily routine.
 

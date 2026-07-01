@@ -17,6 +17,16 @@
 - **API Bridge:** The frontend communicates with the AI via `app/api/analyze/route.ts`.
 - **Data Types:** Shared TypeScript interfaces are in `lib/types.ts`.
 
+## Testing
+- **Test images:** `public/test-images/face1.jpg`, `face2.jpg`, `face3.jpg`
+- **Smoke test:** After any backend change, verify the API with:
+  ```bash
+  BASE64=$(base64 -i public/test-images/face1.jpg | tr -d '\n')
+  curl -s -X POST http://localhost:3000/api/analyze \
+    -H "Content-Type: application/json" \
+    -d "{\"dataUrl\":\"data:image/jpeg;base64,${BASE64}\"}" | python3 -m json.tool
+  ```
+
 ## Implementation Rules
 - **Tone:** Science-based, professional, and empathetic. Avoid harsh critiques.
 - **Verification:** Always test backend logic after changes before updating the UI.
