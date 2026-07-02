@@ -1,7 +1,9 @@
-import { AnalysisResult, RoutineItem } from "@/lib/types";
+import { AnalysisResult, RoutineItem, POSITIVE, NEGATIVE } from "@/lib/types";
+import AnnotatedPhoto from "@/components/AnnotatedPhoto";
 
 interface ResultsViewProps {
   result: AnalysisResult;
+  photoUrl: string;
   onReset: () => void;
 }
 
@@ -33,10 +35,22 @@ function CategoryDot({ category }: { category: RoutineItem["category"] }) {
   );
 }
 
+function AnnotationItem({ label, color }: { label: string; color: string }) {
+  return (
+    <li className="flex items-center gap-2.5">
+      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: color }} />
+      <span className="font-sans text-xs text-foreground/70 leading-snug">{label}</span>
+    </li>
+  );
+}
+
 const TIME_ORDER: RoutineItem["time"][] = ["morning", "evening", "weekly", "ongoing"];
 
-export default function ResultsView({ result, onReset }: ResultsViewProps) {
+export default function ResultsView({ result, photoUrl, onReset }: ResultsViewProps) {
   const sortedInsights = [...result.insights].sort((a, b) => a.priority - b.priority);
+  const annotations = result.annotations ?? [];
+  const positives = annotations.filter((a) => a.type === "positive");
+  const negatives = annotations.filter((a) => a.type === "negative");
 
   const routineByTime = result.routine.reduce<Record<string, RoutineItem[]>>(
     (acc, item) => {
@@ -49,19 +63,59 @@ export default function ResultsView({ result, onReset }: ResultsViewProps) {
 
   return (
     <section className="max-w-2xl mx-auto px-6 pb-28">
-      {/* Glow Score */}
-      <div className="text-center pt-12 pb-8">
-        <p className="font-sans text-xs text-muted uppercase tracking-widest mb-3">
-          Glow Score
-        </p>
-        <span className="font-serif text-8xl text-foreground leading-none">
-          {result.overallScore}
-        </span>
-        <span className="font-serif text-4xl text-warm-accent">/10</span>
+      {/* Hero: Annotated Photo + Score & Legend */}
+      <div className="flex flex-col sm:flex-row gap-6 pt-10 pb-8 animate-fade-in-up">
+        {/* Annotated photo */}
+        <div className="sm:w-[55%]">
+          <AnnotatedPhoto photoUrl={photoUrl} annotations={annotations} />
+        </div>
+
+        {/* Right panel: score + annotation legend */}
+        <div className="sm:w-[45%] flex flex-col">
+          {/* Glow Score */}
+          <div className="text-center pt-2 pb-5 border-b border-accent-sand/50">
+            <p className="font-sans text-xs text-muted uppercase tracking-widest mb-2">
+              Glow Score
+            </p>
+            <span className="font-serif text-6xl text-foreground leading-none">
+              {result.overallScore}
+            </span>
+            <span className="font-serif text-2xl text-warm-accent">/10</span>
+          </div>
+
+          {/* Annotation legend */}
+          <div className="pt-5 space-y-5 flex-1">
+            {positives.length > 0 && (
+              <div>
+                <p className="font-mono text-[9px] tracking-[0.2em] uppercase text-muted mb-2.5">
+                  Strengths
+                </p>
+                <ul className="space-y-2">
+                  {positives.map((a, i) => (
+                    <AnnotationItem key={i} label={a.label} color={POSITIVE} />
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {negatives.length > 0 && (
+              <div>
+                <p className="font-mono text-[9px] tracking-[0.2em] uppercase text-muted mb-2.5">
+                  To Improve
+                </p>
+                <ul className="space-y-2">
+                  {negatives.map((a, i) => (
+                    <AnnotationItem key={i} label={a.label} color={NEGATIVE} />
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Top Priority */}
-      <div className="rounded-3xl bg-accent-sand/40 border border-accent-sand px-6 py-5 mb-10 text-center">
+      <div className="rounded-3xl bg-accent-sand/40 border border-accent-sand px-6 py-5 mb-10 text-center animate-fade-in-up [animation-delay:150ms]">
         <p className="font-sans text-xs text-muted uppercase tracking-widest mb-2">
           This Week&apos;s Priority
         </p>
@@ -70,7 +124,7 @@ export default function ResultsView({ result, onReset }: ResultsViewProps) {
         </p>
       </div>
 
-      {/* Insights */}
+      <div className="animate-fade-in-up [animation-delay:300ms]">
       <h2 className="font-serif text-2xl text-foreground tracking-wide mb-5">
         Your Insights
       </h2>
@@ -93,7 +147,6 @@ export default function ResultsView({ result, onReset }: ResultsViewProps) {
         ))}
       </div>
 
-      {/* Routine */}
       <h2 className="font-serif text-2xl text-foreground tracking-wide mb-6">
         Your Daily Routine
       </h2>
@@ -127,8 +180,10 @@ export default function ResultsView({ result, onReset }: ResultsViewProps) {
         ))}
       </div>
 
+      </div>
+
       {/* Reset */}
-      <div className="text-center">
+      <div className="text-center animate-fade-in-up [animation-delay:450ms]">
         <button
           onClick={onReset}
           className="font-sans text-sm text-muted uppercase tracking-widest

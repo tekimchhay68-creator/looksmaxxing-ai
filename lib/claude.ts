@@ -36,14 +36,30 @@ interface RoutineItem {
   durationMinutes?: number;      // optional, only if step has a clear time cost
 }
 
+interface Annotation {
+  x: number;    // 0–100, horizontal position as % from left edge of image
+  y: number;    // 0–100, vertical position as % from top edge of image
+  type: "positive" | "negative"; // green = already strong; red = area to improve
+  label: string; // 2–4 words naming the specific feature, e.g. "Strong cheekbones" or "Brow shaping needed"
+}
+
 interface AnalysisResult {
   insights: InsightArea[];       // 4–6 items, priority values must be unique
   routine: RoutineItem[];        // 8–12 items across a mix of times and categories
   overallScore: number;          // integer 1–10 "Glow Score" for current presentation
   topPriority: string;           // single highest-impact action for the next 7 days
+  annotations: Annotation[];     // 5–8 markers on mutable facial/grooming features visible in the photo; x/y are % from top-left; mark only what you can see clearly
 }
 
+If the image does not contain a clear human face as the primary subject, return exactly: {"error":"no_face"} and nothing else.
+
 Return ONLY the JSON object — no markdown fences, no explanation, no text before or after the opening brace. Any text outside the JSON object will break the parser.`;
+
+export class NoFaceError extends Error {
+  constructor() {
+    super("No human face detected. Please upload a clear portrait photo.");
+  }
+}
 
 export async function analyzePhoto(
   base64: string,
@@ -51,7 +67,7 @@ export async function analyzePhoto(
 ): Promise<AnalysisResult> {
   const response = await client.messages.create({
     model: "claude-sonnet-4-6",
-    max_tokens: 2048,
+    max_tokens: 3000,
     system: SYSTEM_PROMPT,
     messages: [
       {
@@ -87,5 +103,7 @@ export async function analyzePhoto(
     .replace(/\s*```$/i, "")
     .trim();
 
-  return JSON.parse(json) as AnalysisResult;
+  const parsed = JSON.parse(json) as AnalysisResult & { error?: string };
+  if (parsed.error === "no_face") throw new NoFaceError();
+  return parsed;
 }

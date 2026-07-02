@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { analyzePhoto } from "@/lib/claude";
+import { analyzePhoto, NoFaceError } from "@/lib/claude";
 
 export async function POST(req: NextRequest) {
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -32,6 +32,9 @@ export async function POST(req: NextRequest) {
     const result = await analyzePhoto(base64, mediaType);
     return NextResponse.json(result);
   } catch (err) {
+    if (err instanceof NoFaceError) {
+      return NextResponse.json({ error: err.message }, { status: 400 });
+    }
     console.error("[analyze] Claude error:", err);
     return NextResponse.json({ error: "Analysis failed. Please try again." }, { status: 500 });
   }

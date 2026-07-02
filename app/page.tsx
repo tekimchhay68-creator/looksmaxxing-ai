@@ -1,16 +1,47 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AppStep, AnalysisResult } from "@/lib/types";
 import LoadingShimmer from "@/components/LoadingShimmer";
 import ResultsView from "@/components/ResultsView";
+
+function panelClass(active: boolean) {
+  return active
+    ? "transition-all duration-500 ease-in-out opacity-100 translate-y-0 pointer-events-auto relative"
+    : "transition-all duration-500 ease-in-out opacity-0 translate-y-2 pointer-events-none absolute inset-0";
+}
 
 export default function Home() {
   const [step, setStep] = useState<AppStep>("capture");
   const [preview, setPreview] = useState<string | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Toast
+  const [toast, setToast] = useState<string | null>(null);
+  const [toastVisible, setToastVisible] = useState(false);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dismissTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+      if (dismissTimer.current) clearTimeout(dismissTimer.current);
+    };
+  }, []);
+
+  function showToast(message: string) {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setToast(message);
+    setTimeout(() => setToastVisible(true), 16);
+    toastTimer.current = setTimeout(() => dismissToast(), 4000);
+  }
+
+  function dismissToast() {
+    setToastVisible(false);
+    if (dismissTimer.current) clearTimeout(dismissTimer.current);
+    dismissTimer.current = setTimeout(() => setToast(null), 300);
+  }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -23,7 +54,6 @@ export default function Home() {
   async function handleAnalyze() {
     if (!preview) return;
     setStep("loading");
-    setError(null);
     try {
       const res = await fetch("/api/analyze", {
         method: "POST",
@@ -37,7 +67,7 @@ export default function Home() {
       setResult(await res.json());
       setStep("results");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      showToast(err instanceof Error ? err.message : "Something went wrong.");
       setStep("capture");
     }
   }
@@ -45,39 +75,104 @@ export default function Home() {
   function handleReset() {
     setStep("capture");
     setPreview(null);
-    setResult(null);
-    setError(null);
-    // Clear value so the same file can trigger onChange again
     if (inputRef.current) inputRef.current.value = "";
+    // Delay clearing result so ResultsView doesn't flash empty during the 500ms fade-out
+    setTimeout(() => setResult(null), 600);
   }
 
   return (
     <main className="min-h-screen bg-background">
-      {/* Nav */}
-      <nav className="border-b border-accent-sand/60 px-8 py-5">
+      <div
+        aria-live="polite"
+        className={`fixed top-5 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 ease-in-out
+          ${toastVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"}`}
+      >
+        {toast && (
+          <div className="flex items-start gap-3 bg-accent-beige border border-accent-sand
+                          rounded-2xl px-5 py-4 shadow-sm w-[90vw] max-w-sm">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-5 h-5 text-warm-accent shrink-0 mt-0.5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
+              />
+            </svg>
+            <p className="font-sans text-sm text-foreground/80 leading-relaxed flex-1">{toast}</p>
+            <button
+              onClick={dismissToast}
+              className="text-muted hover:text-foreground transition-colors shrink-0"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-4 h-4"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        )}
+      </div>
+
+      <nav className="border-b border-accent-sand/60 px-5 sm:px-8 py-5">
         <span className="font-serif text-xl text-foreground tracking-wide">
           Looksmaxxing AI
         </span>
       </nav>
 
-      {/* Capture step */}
-      {step === "capture" && (
-        <>
-          <section className="pt-24 pb-4 px-6 text-center">
-            <h1 className="font-serif text-4xl md:text-5xl text-foreground leading-tight tracking-tight max-w-xl mx-auto">
-              Discover Your Best Self
+      <div className="relative">
+        <div className={panelClass(step === "capture")} aria-hidden={step !== "capture"}>
+          <section className="pt-12 sm:pt-24 pb-4 px-6 text-center">
+            <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl text-foreground leading-tight tracking-tight max-w-xl mx-auto">
+              Your Best Self, Revealed.
             </h1>
             <p className="font-sans text-muted text-lg mt-5 max-w-md mx-auto leading-relaxed">
-              Upload a clear photo and receive a personalized aesthetic analysis
-              with a science-backed routine.
+              A kind, science-backed look at your aesthetic potential — and a clear path forward.
             </p>
+
+            <ol className="flex flex-col gap-5 mt-10 mb-2 max-w-sm mx-auto text-left">
+              {[
+                {
+                  title: "Find natural light.",
+                  body: "Stand near a window or step outside — soft, even light brings out the most accurate detail.",
+                },
+                {
+                  title: "Take a clean, forward-facing photo.",
+                  body: "No filters, no heavy edits. Just you, looking straight at the camera.",
+                },
+                {
+                  title: "Upload and discover.",
+                  body: "Receive a personalised facial analysis and curated routine in seconds.",
+                },
+              ].map((step, i) => (
+                <li key={i} className="flex items-start gap-4">
+                  <span className="font-serif text-warm-accent text-lg leading-none mt-0.5 w-5 shrink-0">
+                    {i + 1}.
+                  </span>
+                  <div>
+                    <span className="font-serif text-sm text-foreground">{step.title}</span>{" "}
+                    <span className="font-sans text-sm text-muted leading-relaxed">{step.body}</span>
+                  </div>
+                </li>
+              ))}
+            </ol>
           </section>
 
           <section className="px-6 mt-10">
             <div className="max-w-lg mx-auto">
               <label
                 htmlFor="photo-upload"
-                className="block rounded-3xl border-2 border-dashed border-accent-sand bg-accent-beige/40 px-8 py-16 cursor-pointer text-center hover:bg-accent-sand/30 transition-colors"
+                className="block rounded-3xl border-2 border-dashed border-accent-sand bg-accent-beige/40 px-8 py-10 sm:py-16 cursor-pointer text-center hover:bg-accent-sand/30 transition-colors"
               >
                 {preview ? (
                   <img
@@ -132,24 +227,20 @@ export default function Home() {
                   Analyse
                 </button>
               )}
-
-              {error && (
-                <p className="mt-4 text-center font-sans text-sm text-warm-accent">
-                  {error}
-                </p>
-              )}
             </div>
           </section>
-        </>
-      )}
+        </div>
 
-      {/* Loading step */}
-      {step === "loading" && <LoadingShimmer />}
+        <div className={panelClass(step === "loading")} aria-hidden={step !== "loading"}>
+          <LoadingShimmer />
+        </div>
 
-      {/* Results step */}
-      {step === "results" && result && (
-        <ResultsView result={result} onReset={handleReset} />
-      )}
+        <div className={panelClass(step === "results")} aria-hidden={step !== "results"}>
+          {result && preview && (
+            <ResultsView result={result} photoUrl={preview} onReset={handleReset} />
+          )}
+        </div>
+      </div>
     </main>
   );
 }

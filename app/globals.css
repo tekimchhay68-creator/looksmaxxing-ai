@@ -24,6 +24,35 @@
   --font-sans:  var(--font-geist-sans);
   --font-mono:  var(--font-geist-mono);
   --font-serif: var(--font-playfair);
+
+  --animate-fade-in-up: fade-in-up 0.5s ease-out both;
+  --animate-shimmer-pulse: shimmer-pulse 2s ease-in-out infinite;
+  --animate-breathing: breathing 3s ease-in-out infinite;
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes marker-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+
+@keyframes shimmer-pulse {
+  0%, 100% { background-color: var(--background); }
+  50%       { background-color: var(--accent-beige); }
+}
+
+@keyframes breathing {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 0.8; }
+}
+
+@keyframes marker-ring-expand {
+  0%   { transform: translate(-50%, -50%) scale(1);   opacity: 0.8; }
+  100% { transform: translate(-50%, -50%) scale(1.9); opacity: 0; }
 }
 
 /* ─── Base styles ─────────────────────────────────────── */

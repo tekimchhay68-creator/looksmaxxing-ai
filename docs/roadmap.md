@@ -19,23 +19,22 @@ Build the end-to-end photo → analysis flow.
 |------|---------|--------|
 | API route: receive photo, call analysis engine, return JSON | `app/api/analyze/route.ts` | ✅ |
 | Photo capture step: upload or camera input | `app/page.tsx` | ✅ |
-| Loading state: organic blob shimmer | `components/LoadingShimmer.tsx` | ✅ |
-| Results view: Glow Score, top priority, insights, routine | `components/ResultsView.tsx` | ✅ |
-| State machine wiring (capture → loading → results → reset) | `app/page.tsx` | ✅ |
+| Loading state: breathing gradient card | `components/LoadingShimmer.tsx` | ✅ |
+| Results view: Glow Score, annotated photo, insights, routine | `components/ResultsView.tsx`, `components/AnnotatedPhoto.tsx` | ✅ |
 
 **Acceptance criteria:** A user can upload a photo, see a loading screen, and receive a formatted analysis with score, insights, and a daily routine.
 
 ---
 
-## Phase 3 — Polish & UX `⬜ Planned`
+## Phase 3 — Polish & UX `✅ Complete`
 
 | Task | Notes | Status |
 |------|-------|--------|
-| Mobile-first responsive layout | Tailwind breakpoints | ⬜ |
-| Smooth transitions between steps | CSS/Tailwind `transition` | ⬜ |
-| Error states (bad image, API failure) | Toast or inline message | ⬜ |
-| Empty/onboarding state copy | Brand voice | ⬜ |
-| Favicon + Open Graph meta image | `public/` + `layout.tsx` | ⬜ |
+| Mobile-first responsive layout | Tailwind breakpoints throughout | ✅ |
+| Smooth transitions between steps | CSS `panelClass` fade + slide | ✅ |
+| Error states (bad image, API failure) | Toast component + `NoFaceError` sentinel | ✅ |
+| Empty/onboarding state copy | Brand voice headline + 3-step instructions | ✅ |
+| Favicon + Open Graph meta image | `layout.tsx` updated; drop assets in `public/` to activate | ✅ |
 
 ---
 

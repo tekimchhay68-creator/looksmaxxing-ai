@@ -19,9 +19,21 @@ const playfairDisplay = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Looksmaxxing AI — Your Aesthetic Consultant",
+  title: "Looksmaxxing AI — Free AI Facial Analysis & Aesthetic Consultant",
   description:
-    "Upload a photo and receive a personalized aesthetic analysis with a curated skincare and grooming routine.",
+    "Free AI looksmaxxing tool. Upload a photo for a personalised facial harmony analysis, skincare routine, and grooming plan powered by AI.",
+  openGraph: {
+    title: "Looksmaxxing AI — Free AI Facial Analysis & Aesthetic Consultant",
+    description:
+      "Free AI looksmaxxing tool. Upload a photo for a personalised facial harmony analysis, skincare routine, and grooming plan powered by AI.",
+    siteName: "Looksmaxxing AI",
+    type: "website",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Looksmaxxing AI" }],
+  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({
