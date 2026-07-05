@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { AppStep, AnalysisResult } from "@/lib/types";
 import LoadingShimmer from "@/components/LoadingShimmer";
 import ResultsView from "@/components/ResultsView";
@@ -12,6 +13,7 @@ function panelClass(active: boolean) {
 }
 
 export default function Home() {
+  const { data: session } = useSession();
   const [step, setStep] = useState<AppStep>("capture");
   const [preview, setPreview] = useState<string | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
@@ -64,8 +66,16 @@ export default function Home() {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error ?? "Analysis failed. Please try again.");
       }
-      setResult(await res.json());
+      const data: AnalysisResult = await res.json();
+      setResult(data);
       setStep("results");
+      if (session?.user) {
+        fetch("/api/analyses", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        }).catch(() => {});
+      }
     } catch (err) {
       showToast(err instanceof Error ? err.message : "Something went wrong.");
       setStep("capture");
@@ -81,7 +91,7 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background flex-1">
       <div
         aria-live="polite"
         className={`fixed top-5 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 ease-in-out
@@ -123,12 +133,6 @@ export default function Home() {
           </div>
         )}
       </div>
-
-      <nav className="border-b border-accent-sand/60 px-5 sm:px-8 py-5">
-        <span className="font-serif text-xl text-foreground tracking-wide">
-          Looksmaxxing AI
-        </span>
-      </nav>
 
       <div className="relative">
         <div className={panelClass(step === "capture")} aria-hidden={step !== "capture"}>
@@ -214,7 +218,9 @@ export default function Home() {
                 onChange={handleFileChange}
               />
               <p className="text-xs text-muted text-center mt-3">
-                Your photo is processed locally and never stored.
+                {session?.user
+                  ? "Your photo is never stored. Results are saved to your history."
+                  : "Your photo is never stored. Sign in to save your results."}
               </p>
 
               {preview && (

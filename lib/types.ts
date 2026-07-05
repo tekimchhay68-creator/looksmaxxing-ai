@@ -32,3 +32,11 @@ export interface AnalysisResult {
 }
 
 export type AppStep = "capture" | "loading" | "results";
+
+export interface AnalysisRecord {
+  id: string;
+  glowScore: number;
+  topPriority: string;
+  insights: InsightArea[];
+  createdAt: string;
+}

@@ -38,11 +38,38 @@ Build the end-to-end photo → analysis flow.
 
 ---
 
-## Phase 4 — Deployment `⬜ Planned`
+## Phase 4 — Auth & User Accounts `✅ Complete`
+
+| Task | File(s) | Status |
+|------|---------|--------|
+| NextAuth v5 config (Google provider, Neon adapter) | `auth.ts` | ✅ |
+| Route protection (Next.js 16: `proxy.ts` replaces `middleware.ts`) | `proxy.ts` | ✅ |
+| Neon DB schema (NextAuth tables + analyses history) | `lib/schema.sql` | ✅ |
+| DB client | `lib/db.ts` | ✅ |
+| Auth API handler | `app/api/auth/[...nextauth]/route.ts` | ✅ |
+| Analyses API (save + list history) | `app/api/analyses/route.ts` | ✅ |
+| Login page | `app/login/page.tsx` | ✅ |
+| Google sign-in button (client component) | `components/GoogleSignInButton.tsx` | ✅ |
+| User dashboard (analysis history) | `app/dashboard/page.tsx` | ✅ |
+| Global header with auth state | `components/Header.tsx` | ✅ |
+| Session provider wrapper | `components/Providers.tsx` | ✅ |
+| Sign-out button | `components/SignOutButton.tsx` | ✅ |
+| Session-aware analysis saving + privacy copy | `app/page.tsx` | ✅ |
+| `AnalysisRecord` type | `lib/types.ts` | ✅ |
+
+**Known prerequisite before auth works end-to-end:**
+- Run `lib/schema.sql` in Neon SQL console to create tables
+- Register `http://localhost:3000/api/auth/callback/google` in Google Cloud Console as an authorized redirect URI
+
+---
+
+## Phase 5 — Deployment `⬜ Planned`
 
 | Task | Notes | Status |
 |------|-------|--------|
-| Environment variable audit | Ensure `ANTHROPIC_API_KEY` is set in prod | ⬜ |
+| Run DB schema in Neon | Execute `lib/schema.sql` in Neon SQL console | ⬜ |
+| Register Google OAuth callback | Add `https://<prod-domain>/api/auth/callback/google` to Google Cloud Console | ⬜ |
+| Environment variable audit | `ANTHROPIC_API_KEY`, `DATABASE_URL_UNPOOLED`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `AUTH_SECRET` | ⬜ |
 | Vercel deploy | `vercel --prod` | ⬜ |
 | Custom domain (optional) | Vercel dashboard | ⬜ |
 

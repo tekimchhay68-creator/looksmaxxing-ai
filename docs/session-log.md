@@ -2,6 +2,41 @@
 
 ---
 
+## 2026-07-05
+
+### Phase 4 — Auth & User Accounts (bug fixes)
+
+**Roadmap update (`docs/roadmap.md`)**
+- Marked Phase 4 complete with corrected file references
+- Added Phase 5 checklist items: run DB schema, register Google OAuth callback URI
+
+**Google OAuth fix (`app/login/page.tsx`, `components/GoogleSignInButton.tsx`)**
+- Root cause: inline `<form action={async () => { "use server"; await signIn(...) }}>` does not work in Next.js 16.2.6 — when the server action fails to redirect cleanly, Auth.js falls back to `GET /api/auth/signin/google`, which throws `UnknownAction` because next-auth v5 removed provider-specific GET sign-in (v4 pattern)
+- Fix: extracted `GoogleSignInButton` (client component) calling `signIn("google", { callbackUrl: "/" })` from `next-auth/react` — fetches a CSRF token and POSTs directly from the browser, bypassing the broken server-action path
+- Verified: POST to `/api/auth/signin/google` returns `302 → https://accounts.google.com/o/oauth2/v2/auth` with correct `client_id`, PKCE challenge, and `redirect_uri=http://localhost:3000/api/auth/callback/google`
+
+**Auth config hardening (`auth.ts`)**
+- Added `trustHost: true` — required explicitly on Vercel when `AUTH_URL` is not set
+- Added `pages: { signIn: "/login", error: "/login" }` — without these, middleware and error redirects fall through to the built-in Auth.js pages; the error page returns HTTP 500 for Configuration-class errors by design in Auth.js
+
+**Next.js 16 proxy migration (`middleware.ts` → `proxy.ts`)**
+- Next.js 16 deprecated `middleware.ts` in favour of `proxy.ts`; the old file was silently ignored, leaving `/dashboard` unprotected
+- Created `proxy.ts` exporting `proxy` function (wraps `auth`) as required; deleted `middleware.ts`
+
+### Bugs remaining
+
+- DB schema not yet applied — `lib/schema.sql` must be run in Neon SQL console before sign-in callback, dashboard, or analysis-saving will work
+- Google Cloud Console redirect URI not yet registered — `http://localhost:3000/api/auth/callback/google` must be added for the OAuth callback to complete
+
+### Next actions
+
+1. Run `lib/schema.sql` in Neon SQL console
+2. Add `http://localhost:3000/api/auth/callback/google` to Google Cloud Console → Authorized redirect URIs
+3. Test the full sign-in → analysis → save → dashboard flow end-to-end
+4. Phase 5: Vercel deploy (add prod redirect URI, set all 5 env vars)
+
+---
+
 ## 2026-07-02
 
 ### Phase 3 — Polish & UX (completed)
