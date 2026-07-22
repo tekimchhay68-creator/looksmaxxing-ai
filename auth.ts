@@ -5,8 +5,17 @@ import { Pool } from "@neondatabase/serverless";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
-  adapter: NeonAdapter(new Pool({ connectionString: process.env.DATABASE_URL_UNPOOLED })),
-  providers: [Google],
+  adapter: NeonAdapter(
+    new Pool({
+      connectionString: process.env.DATABASE_URL_UNPOOLED,
+    })
+  ),
+  providers: [
+    Google({
+      clientId: process.env.AUTH_GOOGLE_ID!,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
+    }),
+  ],
   pages: {
     signIn: "/login",
     error: "/login",
